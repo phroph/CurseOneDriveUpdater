@@ -34,15 +34,14 @@ passport.use(new OAuth2Strategy({
       callbackURL: "http://localhost:3000/auth/onedrive/callback"
     },
     function(accessToken, refreshToken, response, profile, done) {
-        console.log(response);
-        User.findOrCreate({ email: profile.email, userId: response.user_id, accessToken: accessToken, refreshToken: refreshToken, expiration: response.expires_in + (Date.now()/1000)  }, function (err, user) {
+        User.findOrCreate({ email: profile.email, userId: response.user_id, accessToken: accessToken, refreshToken: refreshToken, expiration: (Date.now() + (response.expires_in*1000)) }, function (err, user) {
             return done(err, user);
         });
     })
 );
 
 passport.serializeUser(function(user, done) {
-    console.log(user);
+    console.log("Serializing: " + user.id);
     done(null, user.id);
 });
 passport.deserializeUser(function(id, done) {
@@ -50,19 +49,20 @@ passport.deserializeUser(function(id, done) {
     User.findOne({ '_id' : id}, function(err, user) {
         if(err) {
             done(err);
+        } if(!user) {
+            done(null,false);
         } else {
-            console.log('Checking access token.');
             if((Date.now()/1000) > user.onedrive.expiration) {
                 console.log('Refreshing access token.');
                 request.post({ url: 'https://login.live.com/oauth20_token.srf', form: { client_id: CLIENT_ID, redirect_uri: 'http://localhost:3000/auth/onedrive/callback', refresh_token: user.onedrive.refreshToken, client_secret: CLIENT_SECRET, grant_type: 'refresh_token'}}, function(err, response, body) {
                     user.onedrive.accessToken = body.access_token;
                     user.onedrive.refreshToken = body.refresh_token;
-                    user.onedrive.expiration = (Date.now()/1000) + body.expires_in;
+                    user.onedrive.expiration = Date.now() + (body.expires_in * 1000);
                     done(null, user);
                 });
                 return;
             }
-            // post this shit.
+            console.log('Token still valid.');
             done(null, user);
         }
     });

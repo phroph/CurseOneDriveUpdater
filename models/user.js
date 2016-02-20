@@ -35,7 +35,7 @@ module.exports.findOrCreate = function(args, done) {
                     }
                 })
             } else {
-                console.log('Found user: ' + user);
+                console.log('Found user: ' + user.onedrive.userId);
                 // Update tokens.
                 user.onedrive.userId = args.userId;
                 user.onedrive.refreshToken = args.refreshToken;
