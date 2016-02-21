@@ -1,0 +1,12 @@
+//
+   Created by Phtoph on 2/20/2016.
+
+extends layout
+
+block content
+    h1 User Page
+    form(id='mod-list',action='/users/updatelist', method='post')
+        div
+            label(for='mods') Mods (CSV):
+            input(type='text', id='mods', name='mods', value=modslist)
+        input(type='submit', value='Update')

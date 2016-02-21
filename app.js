@@ -29,13 +29,15 @@ passport.use(new OAuth2Strategy({
       tokenURL: 'https://login.live.com/oauth20_token.srf',
       clientID: CLIENT_ID,
       clientSecret: CLIENT_SECRET,
-      scope: 'onedrive.appfolder wl.offline_access wl.signin wl.emails',
+      scope: 'onedrive.appfolder wl.emails wl.offline_access wl.signin ',
       authorizationURL: 'https://login.live.com/oauth20_authorize.srf',
       callbackURL: "http://localhost:3000/auth/onedrive/callback"
     },
     function(accessToken, refreshToken, response, profile, done) {
-        User.findOrCreate({ email: profile.email, userId: response.user_id, accessToken: accessToken, refreshToken: refreshToken, expiration: (Date.now() + (response.expires_in*1000)) }, function (err, user) {
-            return done(err, user);
+        request.get('https://apis.live.net/v5.0/me?access_token=' + accessToken, function(err, body, WLresponse) {
+            User.findOrCreate({ email: JSON.parse(WLresponse).emails.preferred, userId: response.user_id, accessToken: accessToken, refreshToken: refreshToken, expiration: (Date.now() + (response.expires_in*1000)) }, function (err, user) {
+                return done(err, user);
+            });
         });
     })
 );

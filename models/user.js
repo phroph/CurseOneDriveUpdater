@@ -8,6 +8,7 @@ var mongoose = require('mongoose'),
 
 var User = new Schema({
     username: String,
+    mods: [String],
     onedrive: {
         userId: String,
         expiration: Number,
@@ -27,7 +28,7 @@ module.exports.findOrCreate = function(args, done) {
             return;
         } else {
             if(user == null) {
-                module.exports.create({ 'username': args.email, 'onedrive.userId': args.userId, 'onedrive.accessToken': args.accessToken, 'onedrive.refreshToken' : args.refreshToken, 'onedrive.expiration' : args.expiration }, function (err, usr) {
+                module.exports.create({ 'username': args.email, 'onedrive.userId': args.userId, 'onedrive.accessToken': args.accessToken, 'onedrive.refreshToken' : args.refreshToken, 'onedrive.expiration' : args.expiration}, function (err, usr) {
                     if (err) {
                         done(err, null);
                     } else {
@@ -36,12 +37,14 @@ module.exports.findOrCreate = function(args, done) {
                 })
             } else {
                 console.log('Found user: ' + user.onedrive.userId);
-                // Update tokens.
+                // Update all info in case anything changes..
                 user.onedrive.userId = args.userId;
                 user.onedrive.refreshToken = args.refreshToken;
                 user.onedrive.accessToken = args.accessToken;
                 user.onedrive.expiration = args.expiration;
-                done(null, user);
+                user.save(function(err, user) {
+                    done(null, user);
+                })
             }
         }
     });
