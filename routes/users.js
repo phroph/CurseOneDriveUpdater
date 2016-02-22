@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var daemon = require('../src/daemon.js');
 var User = require('../models/User.js');
 
 /* GET users listing. */
@@ -24,6 +25,8 @@ router.post('/updatelist', function(req, res) {
   User.findOne({ _id: req.user._id }, function(err, user) {
     user.mods = req.body.mods.split(',');
     user.save(function(err, user) {
+      // trigger an update and redirect the user while we update.
+      daemon.updateUser(user);
       res.redirect('http://localhost:3000/Users');
     })
   })

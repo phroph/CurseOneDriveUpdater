@@ -34,6 +34,7 @@ passport.use(new OAuth2Strategy({
       callbackURL: "http://localhost:3000/auth/onedrive/callback"
     },
     function(accessToken, refreshToken, response, profile, done) {
+        console.log(response);
         request.get('https://apis.live.net/v5.0/me?access_token=' + accessToken, function(err, body, WLresponse) {
             User.findOrCreate({ email: JSON.parse(WLresponse).emails.preferred, userId: response.user_id, accessToken: accessToken, refreshToken: refreshToken, expiration: (Date.now() + (response.expires_in*1000)) }, function (err, user) {
                 return done(err, user);
@@ -54,7 +55,7 @@ passport.deserializeUser(function(id, done) {
         } if(!user) {
             done(null,false);
         } else {
-            if((Date.now()/1000) > user.onedrive.expiration) {
+            if(Date.now() > user.onedrive.expiration) {
                 console.log('Refreshing access token.');
                 request.post({ url: 'https://login.live.com/oauth20_token.srf', form: { client_id: CLIENT_ID, redirect_uri: 'http://localhost:3000/auth/onedrive/callback', refresh_token: user.onedrive.refreshToken, client_secret: CLIENT_SECRET, grant_type: 'refresh_token'}}, function(err, response, body) {
                     user.onedrive.accessToken = body.access_token;
