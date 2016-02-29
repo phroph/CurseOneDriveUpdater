@@ -1,5 +1,4 @@
 var express = require('express');
-//var request = require('request');
 var CLIENT_ID = process.env.CLIENT_ID;
 var passport = require('passport');
 var router = express.Router();

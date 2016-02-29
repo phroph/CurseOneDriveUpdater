@@ -37,7 +37,7 @@ module.exports.findOrCreate = function(args, done) {
                 })
             } else {
                 console.log('Found user: ' + user.onedrive.userId);
-                // Update all info in case anything changes..
+                // Update all info in case anything changes.
                 user.onedrive.userId = args.userId;
                 user.onedrive.refreshToken = args.refreshToken;
                 user.onedrive.accessToken = args.accessToken;
