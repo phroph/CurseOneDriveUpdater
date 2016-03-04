@@ -3,6 +3,7 @@
  */
 
 var request = require('request');
+var fs = require('fs');
 
 var createCallback = function(dec, user, map, name) {
     return function (err, body, res) {
@@ -25,6 +26,7 @@ var createCallback = function(dec, user, map, name) {
 }
 
 module.exports.updateUser = function(user) {
+    console.log('Syncing user: ' + user.onedrive.userId);
     var map = {};
     var counter = 0;
     var dec = function() {
@@ -36,6 +38,30 @@ module.exports.updateUser = function(user) {
             request.get('http://www.curse.com/addons/wow/' + user.mods[mod] + '/download', createCallback(dec, user, map, user.mods[mod]));
         }
     }
+
+    request.get({
+        url: 'https://api.onedrive.com/v1.0/drive/special/approot:/:/children',
+        headers: {
+            'Authorization': 'bearer ' + user.onedrive.accessToken,
+        }}, function (err, body, res) {
+            var files = JSON.parse(res).value;
+            var found = false;
+            for(var file in files) {
+                var fileName = files[file].name;
+                if(fileName == 'install_mods.ps1') {
+                    found = true;
+                }
+            }
+            if(!found) {
+                console.log('Adding install script to OneDrive.');
+                fs.createReadStream('./bin/install_mods.ps1').pipe(request.put({
+                    url: "https://api.onedrive.com/v1.0/drive/special/approot:/install_mods.ps1:/content",
+                    headers: {
+                        'Authorization': 'bearer ' + user.onedrive.accessToken,
+                    }
+                }));
+            }
+        });
 
     var timeoutCallback = function() {
         if(counter > 0) {
@@ -80,6 +106,7 @@ module.exports.updateUser = function(user) {
     timeoutCallback();
 };
 
-module.exports.updateAll = function() {
-
+module.exports.updateAll = function(users) {
+    console.log('Syncing all users.');
+    users.forEach(function(user) { module.exports.updateUser(user); });
 };

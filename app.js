@@ -135,7 +135,9 @@ app.use(function(err, req, res, next) {
 
 setInterval(function() {
     var daemon = require('./src/daemon.js');
-    daemon.updateAll();
+    User.find({}, function(err, users) {
+        daemon.updateAll(users);
+    })
 }, 86400000);
 
 module.exports = app;
