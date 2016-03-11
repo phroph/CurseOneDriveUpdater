@@ -3,6 +3,7 @@
  */
 
 var mongoose = require('mongoose'),
+    encrypt = require('mongoose-encryption'),
     Schema = mongoose.Schema,
     passportLocalMongoose = require('passport-local-mongoose');
 
@@ -18,6 +19,7 @@ var User = new Schema({
 });
 
 User.plugin(passportLocalMongoose);
+User.plugin(encrypt, { secret: process.env.KEY, exclude: ['username', 'mods'] });
 
 module.exports = mongoose.model('User', User);
 module.exports.findOrCreate = function(args, done) {

@@ -133,6 +133,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
+// Update once daily.
 setInterval(function() {
     var daemon = require('./src/daemon.js');
     User.find({}, function(err, users) {
