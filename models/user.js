@@ -19,7 +19,7 @@ var User = new Schema({
 });
 
 User.plugin(passportLocalMongoose);
-User.plugin(encrypt, { secret: process.env.KEY, exclude: ['username', 'mods'] });
+User.plugin(encrypt, { secret: process.env.KEY, excludeFromEncryption: ['username', 'mods'] });
 
 module.exports = mongoose.model('User', User);
 module.exports.findOrCreate = function(args, done) {
